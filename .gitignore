@@ -1,3 +1,6 @@
 /target
 pt1.py
 pt2.py
+__pycache__
+data/main.csv
+images/part1.svg

@@ -1,12 +1,17 @@
 use anyhow::Result;
 use ndarray::{Array1, Array2, Ix};
 use ndarray_linalg::Solve;
-use plotters::style::register_font;
+use plotters::{
+    backend::SVGBackend,
+    chart::ChartBuilder,
+    drawing::IntoDrawingArea,
+    series::LineSeries,
+    style::{register_font, GREEN, RED, WHITE, YELLOW},
+};
 
-const M: usize = 2;
+const M: usize = 3;
 
-fn main() -> Result<()> {
-    println!("Hello, world!");
+fn setup_plotters() {
     register_font(
         "sans-serif",
         plotters::style::FontStyle::Normal,
@@ -14,32 +19,50 @@ fn main() -> Result<()> {
     )
     .map_err(|_| "Couldn't register font")
     .unwrap();
+}
 
-    let data = csv::Reader::from_path("data/main.csv")?;
-    let records = data.into_records();
+fn main() -> Result<()> {
+    setup_plotters();
 
-    let values: Array1<(f64, f64)> = records
-        .flatten()
-        .map(|datum| {
-            (
-                datum.get(0).unwrap().parse::<f64>().unwrap(),
-                datum.get(1).unwrap().parse::<f64>().unwrap(),
-            )
-        })
-        .collect::<Vec<_>>()
-        .into();
+    let root = SVGBackend::new("images/part1.svg", (800, 800)).into_drawing_area();
+    root.fill(&WHITE)?;
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(20)
+        .y_label_area_size(50)
+        .build_cartesian_2d(0.0..1000.0, 0.0..50.0)?;
 
-    println!("{:?}", values);
+    let values = parse_csv()?;
 
-    let lhs: ndarray::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::Dim<[Ix; 2]>> =
-        make_lhs(M, values.map(|(x, _)| *x));
-    println!("{:?}", lhs);
+    // eprintln!("{:?}", values);
 
-    let rhs = make_rhs(M, values.map(|(x, _)| *x), values.map(|(_, y)| *y));
-    println!("{:?}", rhs);
+    let lhs = make_lhs(M, values.get_x());
+    // eprintln!("{:?}", lhs);
+
+    let rhs = make_rhs(M, values.get_x(), values.get_y());
+    // eprintln!("{:?}", rhs);
 
     let result = Solve::solve_into(&lhs, rhs).unwrap();
     println!("{:?}", result);
+
+    chart.draw_series(LineSeries::new(
+        (0..1000).map(|x: i32| {
+            (
+                x as f64,
+                result[0]
+                    + result[1] * x as f64
+                    + result[2] * x.pow(2) as f64
+                    + result[3] * x.pow(3) as f64,
+            )
+        }),
+        &GREEN,
+    ))?;
+
+    chart.draw_series(LineSeries::new(values, &RED))?;
+
+    chart.configure_mesh().draw()?;
+    chart.configure_series_labels().draw()?;
+
+    root.present()?;
 
     Ok(())
 }
@@ -75,4 +98,48 @@ fn make_rhs(m: usize, x: Array1<f64>, y: Array1<f64>) -> Array1<f64> {
     }
 
     rhs
+}
+
+fn parse_csv() -> Result<Array1<(f64, f64)>> {
+    let data = csv::Reader::from_path("data/main.csv")?;
+    let records = data.into_records();
+
+    Ok(records
+        .flatten()
+        .map(|datum| {
+            (
+                datum
+                    .get(0)
+                    .expect("Coudln't get x")
+                    .parse::<f64>()
+                    .unwrap(),
+                datum
+                    .get(1)
+                    .expect("Coudln't get y")
+                    .parse::<f64>()
+                    .unwrap(),
+            )
+        })
+        .collect::<Vec<_>>()
+        .into())
+}
+
+trait GetYCoords {
+    fn get_y(&self) -> Array1<f64>;
+}
+
+impl GetYCoords for Array1<(f64, f64)> {
+    fn get_y(&self) -> Array1<f64> {
+        self.map(|(_, y)| *y)
+    }
+}
+
+trait GetXCoords {
+    fn get_x(&self) -> Array1<f64>;
+}
+
+impl GetXCoords for Array1<(f64, f64)> {
+    fn get_x(&self) -> Array1<f64> {
+        self.map(|(x, _)| *x)
+    }
 }
