@@ -1,6 +1,9 @@
 import csv
-import math  # pyright: ignore[reportUnusedImport]
+import math
 import random
+
+SAMPLES_COUNT = 100
+X_AXIS_LEN = 1000
 
 fun = input("part1: f(x) = ")
 with open("data/pt1_main.csv", "w") as ffile:
@@ -9,14 +12,14 @@ with open("data/pt1_main.csv", "w") as ffile:
     # just believe me, this will create the function here
     exec("def f(x): return " + fun)
 
-    for elem in (  # pyright: ignore[reportUnknownVariableType]
+    for elem in (
         [
-            x / 100,
-            f(x / 100),  # pyright: ignore[reportUndefinedVariable]
+            x * X_AXIS_LEN / SAMPLES_COUNT,
+            f(x * X_AXIS_LEN / SAMPLES_COUNT),
         ]
-        for x in range(100000)
+        for x in range(SAMPLES_COUNT)
     ):
-        the_writer.writerow(elem)  # pyright: ignore[reportUnknownArgumentType]
+        the_writer.writerow(elem)
 
 fun = input("part2: f(x) = ")
 with open("data/pt2_main.csv", "w") as ffile:
@@ -26,14 +29,21 @@ with open("data/pt2_main.csv", "w") as ffile:
     exec("def f(x): return " + fun)
 
     vals = []
-    for x in range(100000):
-        xval = x / 100 + random.randrange(-5, 5) / 10 *x/100
-        fval = f(x / 100) + random.randrange(-5, 5) / 10*f(x/100)  # pyright: ignore[reportUndefinedVariable]
-        vals.append([
-            xval,
-            fval,
-            int(f(xval) > fval),  # pyright: ignore[reportUndefinedVariable, reportUnknownArgumentType] # fmt: skip
-        ])
+    for x in range(SAMPLES_COUNT):
+        xval = (
+            x * X_AXIS_LEN / SAMPLES_COUNT
+            + random.randrange(-5, 5) / 10 * x * X_AXIS_LEN / SAMPLES_COUNT
+        )
+        fval = f(x * X_AXIS_LEN / SAMPLES_COUNT) + random.randrange(-5, 5) / 10 * f(
+            x * X_AXIS_LEN / SAMPLES_COUNT
+        )
+        vals.append(
+            [
+                xval,
+                fval,
+                int(f(xval) > fval),
+            ]
+        )
 
-    for elem in (vals):
-        the_writer.writerow(elem)  # pyright: ignore[reportUnknownArgumentType]
+    for elem in vals:
+        the_writer.writerow(elem)

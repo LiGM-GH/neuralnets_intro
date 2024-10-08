@@ -24,7 +24,7 @@ pub fn learn() -> Result<()> {
 
     let (x, y) = parse_data()?;
 
-    chart.draw_series(x.axis_iter(Axis(1)).enumerate().filter(|(i, _)| i % 100 == 0).map(|(i, elem)| {
+    chart.draw_series(x.axis_iter(Axis(1)).enumerate().map(|(i, elem)| {
         match y[i] {
             0 => EmptyElement::at((elem[0], elem[1])) + Cross::new((0, 0), 3, GREEN),
             1 => EmptyElement::at((elem[0], elem[1])) + Cross::new((0, 0), 3, RED),
@@ -119,8 +119,11 @@ pub fn parse_data() -> Result<(Array2<f64>, Array1<i32>)> {
 
 fn learn_inner(w: &mut Array1<f64>, x: &Array2<f64>, y: &Array1<i32>) {
     let mut res;
+    let mut the_end = 0;
 
-    for _ in 0..100 {
+    for _ in 0..100_000 {
+        let mut counted = 0;
+
         for (x, y) in x.axis_iter(ndarray::Axis(1)).zip(y) {
             let x = x.to_owned() / x[0];
             res = i32::from(w.dot(&x) >= 0.0);
@@ -129,7 +132,17 @@ fn learn_inner(w: &mut Array1<f64>, x: &Array2<f64>, y: &Array1<i32>) {
                 continue;
             }
 
+            counted += 1;
+
             w.scaled_add(ETA * (y - res) as f64, &x);
         }
+
+        the_end += 1;
+
+        if counted <= y.len() / 20 {
+            break;
+        }
     }
+
+    println!("Iteration of the end: {}", the_end);
 }
