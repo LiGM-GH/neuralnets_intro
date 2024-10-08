@@ -1,5 +1,3 @@
-use std::io::Read;
-
 use anyhow::{ensure, Result};
 use ndarray::{Array1, Array2};
 use ndarray_linalg::Solve;
@@ -140,7 +138,7 @@ pub fn make_rhs(m: usize, x: Array1<f64>, y: Array1<f64>) -> Array1<f64> {
 pub fn parse_csv() -> Result<Array1<(f64, f64)>> {
     let data = csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_path("data/main.csv")?;
+        .from_path("data/pt1_main.csv")?;
     let records = data.into_records();
 
     Ok(records
