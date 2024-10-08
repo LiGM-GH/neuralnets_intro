@@ -55,12 +55,11 @@ pub fn learn() -> Result<()> {
     Ok(())
 }
 
-pub fn predict() -> Result<()> {
+pub fn predict(x: f64) -> Result<()> {
     let reader = csv::ReaderBuilder::new()
         .has_headers(false)
         .from_path("data/pt1_results.csv")?;
-    println!("{:?}", reader);
-    // reader.records().for_each(|val| println!("{:?}", val));
+
     let results = reader
         .into_records()
         .flat_map(|record| {
@@ -72,14 +71,8 @@ pub fn predict() -> Result<()> {
         })
         .collect::<Vec<_>>();
 
-    println!("{:?}", results);
-
     ensure!(!results.is_empty(), "Results not found or CSV file is bad");
 
-    let mut x = String::new();
-    std::io::stdin().read_line(&mut x)?;
-    let x = x.trim_end().parse::<f64>().unwrap();
-    println!("{}", x);
     println!(
         "{}",
         results

@@ -2,7 +2,7 @@ import csv
 import math  # pyright: ignore[reportUnusedImport]
 import random
 
-fun = input("f(x) = ")
+fun = input("part1: f(x) = ")
 with open("data/pt1_main.csv", "w") as ffile:
     the_writer = csv.writer(ffile)
 
@@ -18,6 +18,7 @@ with open("data/pt1_main.csv", "w") as ffile:
     ):
         the_writer.writerow(elem)  # pyright: ignore[reportUnknownArgumentType]
 
+fun = input("part2: f(x) = ")
 with open("data/pt2_main.csv", "w") as ffile:
     the_writer = csv.writer(ffile)
 

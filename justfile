@@ -4,11 +4,17 @@ default:
 run cargoflags="":
     cargo run {{cargoflags}}
 
-pt1:
-    cargo run part1 && feh ./images/part1.svg
+l1:
+    cargo run part1 learn && feh ./images/part1.svg
 
-pt2:
-    cargo run part2 && feh ./images/part2.svg
+l2:
+    cargo run part2 learn && feh ./images/part2.svg
+
+p1 x:
+    cargo run part1 predict {{x}}
+
+p2 x y:
+    cargo run part2 predict {{x}} {{y}}
 
 peek-pt1:
     feh ./images/part1.svg
